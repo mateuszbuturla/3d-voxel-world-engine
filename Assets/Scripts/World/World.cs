@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class World : MonoBehaviour
 {
+    public static World Instance { get; private set; }
+
+    public Material voxelMaterial;
+
     public int worldSize = 4;
     public int chunkSize = 16;
     public int chunkHeight = 100;
@@ -15,6 +19,18 @@ public class World : MonoBehaviour
         chunks = new Dictionary<Vector3, Chunk>();
 
         GenerateWorld();
+    }
+
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void GenerateWorld()
@@ -33,5 +49,21 @@ public class World : MonoBehaviour
                 chunks.Add(chunkPosition, newChunk);
             }
         }
+    }
+
+    public Chunk GetChunkAt(Vector3 globalPosition)
+    {
+        Vector3Int chunkCoordinates = new Vector3Int(
+            Mathf.FloorToInt(globalPosition.x / chunkSize) * chunkSize,
+            Mathf.FloorToInt(globalPosition.y / chunkHeight) * chunkHeight,
+            Mathf.FloorToInt(globalPosition.z / chunkSize) * chunkSize
+        );
+
+        if (chunks.TryGetValue(chunkCoordinates, out Chunk chunk))
+        {
+            return chunk;
+        }
+
+        return null;
     }
 }

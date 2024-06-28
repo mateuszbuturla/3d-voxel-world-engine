@@ -151,9 +151,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb4f36c57844f80489e3b7c7c37c62ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  voxelMaterial: {fileID: 2100000, guid: 857e669ec1e86854a95809c47e7b5acd, type: 2}
   worldSize: 2
   chunkSize: 16
-  chunkHeight: 100
+  chunkHeight: 64
 --- !u!4 &311179611
 Transform:
   m_ObjectHideFlags: 0
