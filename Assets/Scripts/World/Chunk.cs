@@ -1,260 +1,106 @@
-using System.Collections.Generic;
-using UnityEditor;
+﻿using System;
 using UnityEngine;
 
-public class Chunk : MonoBehaviour
+public static class Chunk
 {
-    private Voxel[,,] voxels;
-    public World world;
 
-    private List<Vector3> vertices = new List<Vector3>();
-    private List<int> triangles = new List<int>();
-    private List<Vector2> uvs = new List<Vector2>();
-
-    private MeshFilter meshFilter;
-    private MeshRenderer meshRenderer;
-    private MeshCollider meshCollider;
-
-    public void Initialize(World world)
+    public static void LoopThroughTheBlocks(ChunkData chunkData, Action<int, int, int> actionToPerform)
     {
-        this.world = world;
-        voxels = new Voxel[world.chunkSize, world.chunkHeight, world.chunkSize];
-        InitializeVoxels();
-    }
-
-    void Start()
-    {
-        meshFilter = gameObject.AddComponent<MeshFilter>();
-        meshRenderer = gameObject.AddComponent<MeshRenderer>();
-        meshCollider = gameObject.AddComponent<MeshCollider>();
-
-        GenerateMesh();
-    }
-
-    private void InitializeVoxels()
-    {
-        for (int x = 0; x < world.chunkSize; x++)
+        for (int index = 0; index < chunkData.blocks.Length; index++)
         {
-            for (int z = 0; z < world.chunkSize; z++)
-            {
-                int height = GetTerrainHeight(transform.position.x + x, transform.position.z + z);
-
-                for (int y = 0; y < world.chunkHeight; y++)
-                {
-                    Vector3 worldPos = transform.position + new Vector3(x, y, z);
-                    VoxelType type = VoxelType.Air;
-
-                    if (y <= height)
-                    {
-                        type = VoxelType.Grass;
-                    }
-
-                    voxels[x, y, z] = new Voxel(worldPos, type, type != VoxelType.Air);
-                }
-            }
+            var position = GetPostitionFromIndex(chunkData, index);
+            actionToPerform(position.x, position.y, position.z);
         }
     }
 
-    int ConvertRange(float value, int max)
+    private static Vector3Int GetPostitionFromIndex(ChunkData chunkData, int index)
     {
-        return (int)(value * max);
+        int x = index % chunkData.chunkSize;
+        int y = (index / chunkData.chunkSize) % chunkData.chunkHeight;
+        int z = index / (chunkData.chunkSize * chunkData.chunkHeight);
+        return new Vector3Int(x, y, z);
     }
 
-    private int GetTerrainHeight(float x, float z)
+    //in chunk coordinate system
+    private static bool InRange(ChunkData chunkData, int axisCoordinate)
     {
-        float noiseValue = Mathf.PerlinNoise(x * 0.01f, z * 0.01f);
+        if (axisCoordinate < 0 || axisCoordinate >= chunkData.chunkSize)
+            return false;
 
-        int height = ConvertRange(noiseValue, world.chunkHeight);
-
-        return height;
+        return true;
     }
 
-    private void GenerateMesh()
+    //in chunk coordinate system
+    private static bool InRangeHeight(ChunkData chunkData, int ycoordinate)
     {
-        IterateVoxels();
+        if (ycoordinate < 0 || ycoordinate >= chunkData.chunkHeight)
+            return false;
 
-        Mesh mesh = new Mesh();
-        mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
-        mesh.uv = uvs.ToArray();
-
-        mesh.RecalculateNormals();
-
-        meshFilter.mesh = mesh;
-        meshCollider.sharedMesh = mesh;
-
-        meshRenderer.material = World.Instance.voxelMaterial;
+        return true;
     }
 
-    public void IterateVoxels()
+    public static BlockType GetBlockFromChunkCoordinates(ChunkData chunkData, Vector3Int chunkCoordinates)
     {
-        for (int x = 0; x < world.chunkSize; x++)
+        return GetBlockFromChunkCoordinates(chunkData, chunkCoordinates.x, chunkCoordinates.y, chunkCoordinates.z);
+    }
+
+    public static BlockType GetBlockFromChunkCoordinates(ChunkData chunkData, int x, int y, int z)
+    {
+        if (InRange(chunkData, x) && InRangeHeight(chunkData, y) && InRange(chunkData, z))
         {
-            for (int y = 0; y < world.chunkHeight; y++)
-            {
-                for (int z = 0; z < world.chunkSize; z++)
-                {
-                    ProcessVoxel(x, y, z);
-                }
-            }
+            int index = GetIndexFromPosition(chunkData, x, y, z);
+            return chunkData.blocks[index];
         }
+
+        return chunkData.worldReference.GetBlockFromChunkCoordinates(chunkData, chunkData.worldPosition.x + x, chunkData.worldPosition.y + y, chunkData.worldPosition.z + z);
     }
 
-    private void ProcessVoxel(int x, int y, int z)
+    public static void SetBlock(ChunkData chunkData, Vector3Int localPosition, BlockType block)
     {
-        if (voxels == null || x < 0 || x >= voxels.GetLength(0) ||
-            y < 0 || y >= voxels.GetLength(1) || z < 0 || z >= voxels.GetLength(2))
+        if (InRange(chunkData, localPosition.x) && InRangeHeight(chunkData, localPosition.y) && InRange(chunkData, localPosition.z))
         {
-            return;
+            int index = GetIndexFromPosition(chunkData, localPosition.x, localPosition.y, localPosition.z);
+            chunkData.blocks[index] = block;
         }
-        Voxel voxel = voxels[x, y, z];
-        if (voxel.isActive)
+        else
         {
-            bool[] facesVisible = new bool[6];
-
-            facesVisible[0] = IsFaceVisible(x, y + 1, z);
-            facesVisible[1] = IsFaceVisible(x, y - 1, z);
-            facesVisible[2] = IsFaceVisible(x - 1, y, z);
-            facesVisible[3] = IsFaceVisible(x + 1, y, z);
-            facesVisible[4] = IsFaceVisible(x, y, z + 1);
-            facesVisible[5] = IsFaceVisible(x, y, z - 1);
-
-            for (int i = 0; i < facesVisible.Length; i++)
-            {
-                if (facesVisible[i])
-                    AddFaceData(x, y, z, i);
-            }
+            throw new Exception("Need to ask World for appropiate chunk");
         }
     }
 
-    private bool IsFaceVisible(int x, int y, int z)
+    private static int GetIndexFromPosition(ChunkData chunkData, int x, int y, int z)
     {
-        Vector3 globalPos = transform.position + new Vector3(x, y, z);
-
-        return IsVoxelHiddenInChunk(x, y, z) && IsVoxelHiddenInWorld(globalPos);
+        return x + chunkData.chunkSize * y + chunkData.chunkSize * chunkData.chunkHeight * z;
     }
 
-    private bool IsVoxelHiddenInChunk(int x, int y, int z)
+    public static Vector3Int GetBlockInChunkCoordinates(ChunkData chunkData, Vector3Int pos)
     {
-        if (x < 0 || x >= world.chunkSize || y < 0 || y >= world.chunkHeight || z < 0 || z >= world.chunkSize)
-            return true;
-        return !voxels[x, y, z].isActive;
+        return new Vector3Int
+        {
+            x = pos.x - chunkData.worldPosition.x,
+            y = pos.y - chunkData.worldPosition.y,
+            z = pos.z - chunkData.worldPosition.z
+        };
     }
 
-    private bool IsVoxelHiddenInWorld(Vector3 globalPos)
+    public static MeshData GetChunkMeshData(ChunkData chunkData)
     {
-        Chunk neighborChunk = World.Instance.GetChunkAt(globalPos);
-        if (neighborChunk == null)
-        {
-            return true;
-        }
+        MeshData meshData = new MeshData(true);
 
-        Vector3 localPos = neighborChunk.transform.InverseTransformPoint(globalPos);
+        LoopThroughTheBlocks(chunkData, (x, y, z) => meshData = BlockHelper.GetMeshData(chunkData, x, y, z, meshData, chunkData.blocks[GetIndexFromPosition(chunkData, x, y, z)]));
 
-        return !neighborChunk.IsVoxelActiveAt(localPos);
+
+        return meshData;
     }
 
-    public bool IsVoxelActiveAt(Vector3 localPosition)
+    internal static Vector3Int ChunkPositionFromBlockCoords(World world, int x, int y, int z)
     {
-        int x = Mathf.RoundToInt(localPosition.x);
-        int y = Mathf.RoundToInt(localPosition.y);
-        int z = Mathf.RoundToInt(localPosition.z);
-
-        if (x >= 0 && x < world.chunkSize && y >= 0 && y < world.chunkHeight && z >= 0 && z < world.chunkSize)
+        Vector3Int pos = new Vector3Int
         {
-            return voxels[x, y, z].isActive;
-        }
-
-        return false;
-    }
-
-    private void AddFaceData(int x, int y, int z, int faceIndex)
-    {
-        if (faceIndex == 0)
-        {
-            vertices.Add(new Vector3(x, y + 1, z));
-            vertices.Add(new Vector3(x, y + 1, z + 1));
-            vertices.Add(new Vector3(x + 1, y + 1, z + 1));
-            vertices.Add(new Vector3(x + 1, y + 1, z));
-            uvs.Add(new Vector2(0, 0));
-            uvs.Add(new Vector2(1, 0));
-            uvs.Add(new Vector2(1, 1));
-            uvs.Add(new Vector2(0, 1));
-        }
-
-        if (faceIndex == 1)
-        {
-            vertices.Add(new Vector3(x, y, z));
-            vertices.Add(new Vector3(x + 1, y, z));
-            vertices.Add(new Vector3(x + 1, y, z + 1));
-            vertices.Add(new Vector3(x, y, z + 1));
-            uvs.Add(new Vector2(0, 0));
-            uvs.Add(new Vector2(0, 1));
-            uvs.Add(new Vector2(1, 1));
-            uvs.Add(new Vector2(1, 0));
-        }
-
-        if (faceIndex == 2)
-        {
-            vertices.Add(new Vector3(x, y, z));
-            vertices.Add(new Vector3(x, y, z + 1));
-            vertices.Add(new Vector3(x, y + 1, z + 1));
-            vertices.Add(new Vector3(x, y + 1, z));
-            uvs.Add(new Vector2(0, 0));
-            uvs.Add(new Vector2(0, 0));
-            uvs.Add(new Vector2(0, 1));
-            uvs.Add(new Vector2(0, 1));
-        }
-
-        if (faceIndex == 3)
-        {
-            vertices.Add(new Vector3(x + 1, y, z + 1));
-            vertices.Add(new Vector3(x + 1, y, z));
-            vertices.Add(new Vector3(x + 1, y + 1, z));
-            vertices.Add(new Vector3(x + 1, y + 1, z + 1));
-            uvs.Add(new Vector2(1, 0));
-            uvs.Add(new Vector2(1, 1));
-            uvs.Add(new Vector2(1, 1));
-            uvs.Add(new Vector2(1, 0));
-        }
-
-        if (faceIndex == 4)
-        {
-            vertices.Add(new Vector3(x, y, z + 1));
-            vertices.Add(new Vector3(x + 1, y, z + 1));
-            vertices.Add(new Vector3(x + 1, y + 1, z + 1));
-            vertices.Add(new Vector3(x, y + 1, z + 1));
-            uvs.Add(new Vector2(0, 1));
-            uvs.Add(new Vector2(0, 1));
-            uvs.Add(new Vector2(1, 1));
-            uvs.Add(new Vector2(1, 1));
-        }
-
-        if (faceIndex == 5)
-        {
-            vertices.Add(new Vector3(x + 1, y, z));
-            vertices.Add(new Vector3(x, y, z));
-            vertices.Add(new Vector3(x, y + 1, z));
-            vertices.Add(new Vector3(x + 1, y + 1, z));
-            uvs.Add(new Vector2(0, 0));
-            uvs.Add(new Vector2(1, 0));
-            uvs.Add(new Vector2(1, 0));
-            uvs.Add(new Vector2(0, 0));
-
-        }
-        AddTriangleIndices();
-    }
-
-    private void AddTriangleIndices()
-    {
-        int vertCount = vertices.Count;
-
-        triangles.Add(vertCount - 4);
-        triangles.Add(vertCount - 3);
-        triangles.Add(vertCount - 2);
-
-        triangles.Add(vertCount - 4);
-        triangles.Add(vertCount - 2);
-        triangles.Add(vertCount - 1);
+            x = Mathf.FloorToInt(x / (float)world.chunkSize) * world.chunkSize,
+            y = Mathf.FloorToInt(y / (float)world.chunkHeight) * world.chunkHeight,
+            z = Mathf.FloorToInt(z / (float)world.chunkSize) * world.chunkSize
+        };
+        return pos;
     }
 }
