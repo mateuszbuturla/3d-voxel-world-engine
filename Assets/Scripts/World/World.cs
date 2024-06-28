@@ -24,6 +24,11 @@ public class World : MonoBehaviour
         }
         chunkDictionary.Clear();
 
+        StartCoroutine(GenerateWorldAsync());
+    }
+
+    private IEnumerator GenerateWorldAsync()
+    {
         for (int x = 0; x < mapSizeInChunks; x++)
         {
             for (int z = 0; z < mapSizeInChunks; z++)
@@ -31,17 +36,16 @@ public class World : MonoBehaviour
                 ChunkData data = new ChunkData(chunkSize, chunkHeight, this, new Vector3Int(x * chunkSize, 0, z * chunkSize));
                 GenerateVoxels(data);
                 chunkDataDictionary.Add(data.worldPosition, data);
-            }
-        }
 
-        foreach (ChunkData data in chunkDataDictionary.Values)
-        {
-            MeshData meshData = Chunk.GetChunkMeshData(data);
-            GameObject chunkObject = Instantiate(chunkPrefab, data.worldPosition, Quaternion.identity);
-            ChunkRenderer chunkRenderer = chunkObject.GetComponent<ChunkRenderer>();
-            chunkDictionary.Add(data.worldPosition, chunkRenderer);
-            chunkRenderer.InitializeChunk(data);
-            chunkRenderer.UpdateChunk(meshData);
+                MeshData meshData = Chunk.GetChunkMeshData(data);
+                GameObject chunkObject = Instantiate(chunkPrefab, data.worldPosition, Quaternion.identity);
+                ChunkRenderer chunkRenderer = chunkObject.GetComponent<ChunkRenderer>();
+                chunkDictionary.Add(data.worldPosition, chunkRenderer);
+                chunkRenderer.InitializeChunk(data);
+                chunkRenderer.UpdateChunk(meshData);
+
+                yield return new WaitForSeconds(0f);
+            }
         }
     }
 
