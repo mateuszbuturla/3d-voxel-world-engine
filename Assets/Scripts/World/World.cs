@@ -18,7 +18,7 @@ public class World : MonoBehaviour
     {
         chunks = new Dictionary<Vector3, Chunk>();
 
-        GenerateWorld();
+        StartCoroutine(GenerateWorldAsync());
     }
 
     void Awake()
@@ -33,7 +33,7 @@ public class World : MonoBehaviour
         }
     }
 
-    private void GenerateWorld()
+    private IEnumerator GenerateWorldAsync()
     {
         for (int x = 0; x < worldSize; x++)
         {
@@ -42,11 +42,16 @@ public class World : MonoBehaviour
                 Vector3 chunkPosition = new Vector3(x * chunkSize, 0, z * chunkSize);
                 GameObject newChunkObject = new GameObject($"Chunk_{x}_{z}");
                 newChunkObject.transform.position = chunkPosition;
+
+                yield return null;
+
                 newChunkObject.transform.parent = this.transform;
 
                 Chunk newChunk = newChunkObject.AddComponent<Chunk>();
                 newChunk.Initialize(this);
                 chunks.Add(chunkPosition, newChunk);
+
+                yield return new WaitForSeconds(0f);
             }
         }
     }

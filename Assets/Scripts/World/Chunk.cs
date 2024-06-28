@@ -35,14 +35,38 @@ public class Chunk : MonoBehaviour
     {
         for (int x = 0; x < world.chunkSize; x++)
         {
-            for (int y = 0; y < world.chunkHeight; y++)
+            for (int z = 0; z < world.chunkSize; z++)
             {
-                for (int z = 0; z < world.chunkSize; z++)
+                int height = GetTerrainHeight(transform.position.x + x, transform.position.z + z);
+
+                for (int y = 0; y < world.chunkHeight; y++)
                 {
-                    voxels[x, y, z] = new Voxel(transform.position + new Vector3(x, y, z), Color.white);
+                    Vector3 worldPos = transform.position + new Vector3(x, y, z);
+                    VoxelType type = VoxelType.Air;
+
+                    if (y <= height)
+                    {
+                        type = VoxelType.Grass;
+                    }
+
+                    voxels[x, y, z] = new Voxel(worldPos, type, type != VoxelType.Air);
                 }
             }
         }
+    }
+
+    int ConvertRange(float value, int max)
+    {
+        return (int)(value * max);
+    }
+
+    private int GetTerrainHeight(float x, float z)
+    {
+        float noiseValue = Mathf.PerlinNoise(x * 0.01f, z * 0.01f);
+
+        int height = ConvertRange(noiseValue, world.chunkHeight);
+
+        return height;
     }
 
     private void GenerateMesh()

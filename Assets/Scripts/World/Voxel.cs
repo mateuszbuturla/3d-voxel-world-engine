@@ -3,12 +3,12 @@ using UnityEngine;
 public struct Voxel
 {
     public Vector3 position;
-    public Color color;
+    public VoxelType voxelType;
     public bool isActive;
-    public Voxel(Vector3 position, Color color, bool isActive = true)
+    public Voxel(Vector3 position, VoxelType voxelType, bool isActive = true)
     {
         this.position = position;
-        this.color = color;
+        this.voxelType = voxelType;
         this.isActive = isActive;
     }
 }
