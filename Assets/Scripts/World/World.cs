@@ -5,15 +5,20 @@ using UnityEngine;
 
 public class World : MonoBehaviour
 {
+    public DomainWarping domainWarping;
+    public NoiseSettings noiseSettings;
     public int mapSizeInChunks = 6;
     public int chunkSize = 16;
     public int chunkHeight = 100;
     public int waterThreshold = 50;
-    public float noiseScale = 0.03f;
     public GameObject chunkPrefab;
 
     Dictionary<Vector3Int, ChunkData> chunkDataDictionary = new Dictionary<Vector3Int, ChunkData>();
     Dictionary<Vector3Int, ChunkRenderer> chunkDictionary = new Dictionary<Vector3Int, ChunkRenderer>();
+
+    public bool useDomainWarping = false;
+
+    public TreePlacement treePlacement;
 
     public void GenerateWorld()
     {
@@ -55,8 +60,19 @@ public class World : MonoBehaviour
         {
             for (int z = 0; z < data.chunkSize; z++)
             {
-                float noiseValue = Mathf.PerlinNoise((data.worldPosition.x + x) * noiseScale, (data.worldPosition.z + z) * noiseScale);
-                int groundPosition = Mathf.RoundToInt(noiseValue * chunkHeight);
+                float noiseValue;
+
+                if (useDomainWarping)
+                {
+                    noiseValue = domainWarping.GenerateDomainNoise(data.worldPosition.x + x, data.worldPosition.z + z, noiseSettings);
+                }
+                else
+                {
+                    noiseValue = OctavePerlin.Noise(data.worldPosition.x + x, data.worldPosition.z + z, noiseSettings);
+                }
+
+                int groundPosition = OctavePerlin.RemapValue01ToInt(noiseValue, 0, chunkHeight);
+
                 for (int y = 0; y < chunkHeight; y++)
                 {
                     BlockType voxelType = BlockType.Dirt;
@@ -70,7 +86,6 @@ public class World : MonoBehaviour
                         {
                             voxelType = BlockType.Air;
                         }
-
                     }
                     else if (y < waterThreshold + 1)
                     {
@@ -86,6 +101,10 @@ public class World : MonoBehaviour
                     }
 
                     Chunk.SetBlock(data, new Vector3Int(x, y, z), voxelType);
+                }
+                if (groundPosition > waterThreshold && groundPosition < 150)
+                {
+                    treePlacement.Generate(data.worldPosition.x + x, data.worldPosition.z + z, groundPosition);
                 }
             }
         }
