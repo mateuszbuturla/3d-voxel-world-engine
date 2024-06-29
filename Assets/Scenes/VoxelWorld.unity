@@ -133,7 +133,6 @@ GameObject:
   - component: {fileID: 60251132}
   - component: {fileID: 60251131}
   - component: {fileID: 60251133}
-  - component: {fileID: 60251134}
   m_Layer: 0
   m_Name: Wold
   m_TagString: Untagged
@@ -153,16 +152,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b92a5e2f856c2c4aa664ce0df34a571, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  domainWarping: {fileID: 60251133}
-  noiseSettings: {fileID: 11400000, guid: b3aae9de655ba034ab093d1b2b3ecc28, type: 2}
-  noiseSettings2: {fileID: 11400000, guid: c2bd101383553154da5fcdd2b8769830, type: 2}
   mapSizeInChunks: 20
   chunkSize: 16
   chunkHeight: 255
   waterThreshold: 100
   chunkPrefab: {fileID: 4443192061081385954, guid: 1c00b035e263f934a9711fcf71e3336a, type: 3}
+  terrainGenerator: {fileID: 60251133}
   useDomainWarping: 1
-  treePlacement: {fileID: 60251134}
 --- !u!4 &60251132
 Transform:
   m_ObjectHideFlags: 0
@@ -175,7 +171,9 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 782920615}
+  - {fileID: 791604551}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &60251133
@@ -187,28 +185,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 60251130}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e604c76a8b1b5b46ac0450ad5664c42, type: 3}
+  m_Script: {fileID: 11500000, guid: 8d503f5a20ecad247a140b20dce07749, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noiseDomainX: {fileID: 11400000, guid: b3aae9de655ba034ab093d1b2b3ecc28, type: 2}
-  noiseDomainY: {fileID: 11400000, guid: b3aae9de655ba034ab093d1b2b3ecc28, type: 2}
-  amplitudeX: 20
-  amplitudeY: 20
---- !u!114 &60251134
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 60251130}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ac0d80a9d19e5c41b6b9acf15a4ff6b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  noiseSettings: {fileID: 11400000, guid: 43a03410628d76645a7a62eb6e965c8d, type: 2}
-  threshold: 0.463
-  prefab: {fileID: 2210631183507611514, guid: 7b2fa2cd45ed02d4da1e04346d9cbf52, type: 3}
+  biomeGenerators:
+  - {fileID: 782920613}
+  - {fileID: 791604549}
+  useDomainWarping: 1
 --- !u!1 &499907350
 GameObject:
   m_ObjectHideFlags: 0
@@ -395,6 +378,132 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &782920612
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 782920615}
+  - component: {fileID: 782920613}
+  - component: {fileID: 782920614}
+  m_Layer: 0
+  m_Name: ForestMountains
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &782920613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 782920612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61db99843ddf514428b5374e8842427f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  noiseSettings: {fileID: 11400000, guid: b3aae9de655ba034ab093d1b2b3ecc28, type: 2}
+  domainWarping: {fileID: 782920614}
+--- !u!114 &782920614
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 782920612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e604c76a8b1b5b46ac0450ad5664c42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  noiseDomainX: {fileID: 11400000, guid: b3aae9de655ba034ab093d1b2b3ecc28, type: 2}
+  noiseDomainY: {fileID: 11400000, guid: b3aae9de655ba034ab093d1b2b3ecc28, type: 2}
+  amplitudeX: 20
+  amplitudeY: 20
+--- !u!4 &782920615
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 782920612}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 60251132}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &791604548
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 791604551}
+  - component: {fileID: 791604549}
+  - component: {fileID: 791604550}
+  m_Layer: 0
+  m_Name: ForestPlains
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &791604549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791604548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61db99843ddf514428b5374e8842427f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  noiseSettings: {fileID: 11400000, guid: c2bd101383553154da5fcdd2b8769830, type: 2}
+  domainWarping: {fileID: 791604550}
+--- !u!114 &791604550
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791604548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e604c76a8b1b5b46ac0450ad5664c42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  noiseDomainX: {fileID: 11400000, guid: c2bd101383553154da5fcdd2b8769830, type: 2}
+  noiseDomainY: {fileID: 11400000, guid: c2bd101383553154da5fcdd2b8769830, type: 2}
+  amplitudeX: 20
+  amplitudeY: 20
+--- !u!4 &791604551
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791604548}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 60251132}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &836582361
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,20 +5,30 @@ using UnityEngine;
 
 public class World : MonoBehaviour
 {
-    public DomainWarping domainWarping;
-    public NoiseSettings noiseSettings;
+    public static World Instance { get; private set; }
     public int mapSizeInChunks = 6;
     public int chunkSize = 16;
     public int chunkHeight = 100;
     public int waterThreshold = 50;
     public GameObject chunkPrefab;
+    public TerrainGenerator terrainGenerator;
 
     Dictionary<Vector3Int, ChunkData> chunkDataDictionary = new Dictionary<Vector3Int, ChunkData>();
     Dictionary<Vector3Int, ChunkRenderer> chunkDictionary = new Dictionary<Vector3Int, ChunkRenderer>();
 
     public bool useDomainWarping = false;
 
-    public TreePlacement treePlacement;
+    void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     public void GenerateWorld()
     {
@@ -29,85 +39,7 @@ public class World : MonoBehaviour
         }
         chunkDictionary.Clear();
 
-        StartCoroutine(GenerateWorldAsync());
-    }
-
-    private IEnumerator GenerateWorldAsync()
-    {
-        for (int x = 0; x < mapSizeInChunks; x++)
-        {
-            for (int z = 0; z < mapSizeInChunks; z++)
-            {
-                ChunkData data = new ChunkData(chunkSize, chunkHeight, this, new Vector3Int(x * chunkSize, 0, z * chunkSize));
-                GenerateVoxels(data);
-                chunkDataDictionary.Add(data.worldPosition, data);
-
-                MeshData meshData = Chunk.GetChunkMeshData(data);
-                GameObject chunkObject = Instantiate(chunkPrefab, data.worldPosition, Quaternion.identity);
-                ChunkRenderer chunkRenderer = chunkObject.GetComponent<ChunkRenderer>();
-                chunkDictionary.Add(data.worldPosition, chunkRenderer);
-                chunkRenderer.InitializeChunk(data);
-                chunkRenderer.UpdateChunk(meshData);
-
-                yield return new WaitForSeconds(0f);
-            }
-        }
-    }
-
-    private void GenerateVoxels(ChunkData data)
-    {
-        for (int x = 0; x < data.chunkSize; x++)
-        {
-            for (int z = 0; z < data.chunkSize; z++)
-            {
-                float noiseValue;
-
-                if (useDomainWarping)
-                {
-                    noiseValue = domainWarping.GenerateDomainNoise(data.worldPosition.x + x, data.worldPosition.z + z, noiseSettings);
-                }
-                else
-                {
-                    noiseValue = OctavePerlin.Noise(data.worldPosition.x + x, data.worldPosition.z + z, noiseSettings);
-                }
-
-                int groundPosition = OctavePerlin.RemapValue01ToInt(noiseValue, 0, chunkHeight);
-
-                for (int y = 0; y < chunkHeight; y++)
-                {
-                    BlockType voxelType = BlockType.Dirt;
-                    if (y > groundPosition)
-                    {
-                        if (y < waterThreshold)
-                        {
-                            voxelType = BlockType.Water;
-                        }
-                        else
-                        {
-                            voxelType = BlockType.Air;
-                        }
-                    }
-                    else if (y < waterThreshold + 1)
-                    {
-                        voxelType = BlockType.Sand;
-                    }
-                    else if (y == groundPosition)
-                    {
-                        voxelType = BlockType.Grass;
-                    }
-                    else if (y < groundPosition && y > groundPosition - 4)
-                    {
-                        voxelType = BlockType.Stone;
-                    }
-
-                    Chunk.SetBlock(data, new Vector3Int(x, y, z), voxelType);
-                }
-                if (groundPosition > waterThreshold && groundPosition < 150)
-                {
-                    treePlacement.Generate(data.worldPosition.x + x, data.worldPosition.z + z, groundPosition);
-                }
-            }
-        }
+        GenerateChunks();
     }
 
     internal BlockType GetBlockFromChunkCoordinates(ChunkData chunkData, int x, int y, int z)
@@ -124,5 +56,42 @@ public class World : MonoBehaviour
 
         Vector3Int blockInCHunkCoordinates = Chunk.GetBlockInChunkCoordinates(containerChunk, new Vector3Int(x, y, z));
         return Chunk.GetBlockFromChunkCoordinates(containerChunk, blockInCHunkCoordinates);
+    }
+
+    public void GenerateChunks()
+    {
+        List<Vector3Int> chunksToGenerate = WorldHelper.GetChunksPos(this);
+
+        terrainGenerator.GenerateData(chunksToGenerate);
+
+        for (int i = 0; i < chunksToGenerate.Count; i++)
+        {
+            ChunkData data = new ChunkData(
+                chunkSize,
+                chunkHeight,
+                this,
+                chunksToGenerate[i]
+            );
+            data = terrainGenerator.GenerateChunkData(data);
+
+            chunkDataDictionary.Add(data.worldPosition, data);
+        }
+
+        foreach (ChunkData data in chunkDataDictionary.Values)
+        {
+            MeshData meshData = Chunk.GetChunkMeshData(data);
+            GameObject chunkObject = Instantiate(chunkPrefab, data.worldPosition, Quaternion.identity);
+            ChunkRenderer chunkRenderer = chunkObject.GetComponent<ChunkRenderer>();
+            chunkDictionary.Add(data.worldPosition, chunkRenderer);
+            chunkRenderer.InitializeChunk(data);
+            chunkRenderer.UpdateChunk(meshData);
+        }
+
+        // foreach (var pos in chunkDataDictionary.Keys)
+        // {
+        //     ChunkRenderer chunkRenderer = chunkDictionary[pos].gameObject.GetComponent<ChunkRenderer>();
+        //     MeshData meshData = Chunk.GetChunkMeshData(chunkDataDictionary[pos]);
+        //     chunkRenderer.UpdateChunk(meshData);
+        // }
     }
 }

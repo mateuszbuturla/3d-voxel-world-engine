@@ -17,5 +17,3 @@ MonoBehaviour:
   offest: {x: 0, y: 0}
   worldOffset: {x: 0, y: 0}
   persistance: 0.4
-  redistributionModifier: 0
-  exponent: 0

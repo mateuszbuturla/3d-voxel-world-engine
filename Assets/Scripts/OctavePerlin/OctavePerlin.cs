@@ -19,11 +19,6 @@ public static class OctavePerlin
         return (int)RemapValue01(value, outputMin, outputMax);
     }
 
-    public static float Redistribution(float noise, NoiseSettings settings)
-    {
-        return Mathf.Pow(noise * settings.redistributionModifier, settings.exponent);
-    }
-
     public static float Noise(float x, float z, NoiseSettings settings)
     {
         x *= settings.noiseZoom;
