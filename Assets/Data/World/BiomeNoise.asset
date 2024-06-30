@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 378b6c6f66351a04cb59573516250f73, type: 3}
-  m_Name: noiseSettings 1
+  m_Name: BiomeNoise
   m_EditorClassIdentifier: 
-  noiseZoom: 0.005
-  octaves: 5
+  noiseZoom: 0.01
+  octaves: 3
   offest: {x: 0, y: 0}
   worldOffset: {x: 0, y: 0}
-  persistance: 0.4
+  persistance: 0.2

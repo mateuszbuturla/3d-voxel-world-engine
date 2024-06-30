@@ -1,15 +1,24 @@
 public static class TerrainHelper
 {
+    public static BiomeGenerator GetBiomeGenerator(TerrainGenerator terrainGenerator, int x, int z)
+    {
+        float noise = OctavePerlin.Noise(x, z, terrainGenerator.biomeNoiseSettings);
+
+        if (noise < 0.5f)
+        {
+            return terrainGenerator.biomeGenerators[0];
+        }
+        else
+        {
+            return terrainGenerator.biomeGenerators[1];
+        }
+    }
+
     public static float GetSurfaceHeight(TerrainGenerator terrainGenerator, int x, int z)
     {
         float noiseValue;
 
-        BiomeGenerator biomeGenerator = terrainGenerator.biomeGenerators[0];
-
-        if (x > 150 && z > 150)
-        {
-            biomeGenerator = terrainGenerator.biomeGenerators[1];
-        }
+        BiomeGenerator biomeGenerator = GetBiomeGenerator(terrainGenerator, x, z);
 
         if (terrainGenerator.useDomainWarping)
         {

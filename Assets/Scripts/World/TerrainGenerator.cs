@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class TerrainGenerator : MonoBehaviour
 {
+    public NoiseSettings biomeNoiseSettings;
     public List<BiomeGenerator> biomeGenerators = new List<BiomeGenerator>();
 
     public Dictionary<Vector3Int, float> heightMap = new Dictionary<Vector3Int, float>();

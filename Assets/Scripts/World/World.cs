@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class World : MonoBehaviour
@@ -38,8 +39,9 @@ public class World : MonoBehaviour
             Destroy(chunk.gameObject);
         }
         chunkDictionary.Clear();
+        terrainGenerator.heightMap = new Dictionary<Vector3Int, float>();
 
-        GenerateChunks();
+        StartCoroutine(GenerateChunks());
     }
 
     internal BlockType GetBlockFromChunkCoordinates(ChunkData chunkData, int x, int y, int z)
@@ -58,7 +60,7 @@ public class World : MonoBehaviour
         return Chunk.GetBlockFromChunkCoordinates(containerChunk, blockInCHunkCoordinates);
     }
 
-    public void GenerateChunks()
+    public IEnumerator GenerateChunks()
     {
         List<Vector3Int> chunksToGenerate = WorldHelper.GetChunksPos(this);
 
@@ -75,17 +77,25 @@ public class World : MonoBehaviour
             data = terrainGenerator.GenerateChunkData(data);
 
             chunkDataDictionary.Add(data.worldPosition, data);
-        }
 
-        foreach (ChunkData data in chunkDataDictionary.Values)
-        {
             MeshData meshData = Chunk.GetChunkMeshData(data);
             GameObject chunkObject = Instantiate(chunkPrefab, data.worldPosition, Quaternion.identity);
             ChunkRenderer chunkRenderer = chunkObject.GetComponent<ChunkRenderer>();
             chunkDictionary.Add(data.worldPosition, chunkRenderer);
             chunkRenderer.InitializeChunk(data);
             chunkRenderer.UpdateChunk(meshData);
+            yield return new WaitForSeconds(0f);
         }
+
+        // foreach (ChunkData data in chunkDataDictionary.Values)
+        // {
+        //     MeshData meshData = Chunk.GetChunkMeshData(data);
+        //     GameObject chunkObject = Instantiate(chunkPrefab, data.worldPosition, Quaternion.identity);
+        //     ChunkRenderer chunkRenderer = chunkObject.GetComponent<ChunkRenderer>();
+        //     chunkDictionary.Add(data.worldPosition, chunkRenderer);
+        //     chunkRenderer.InitializeChunk(data);
+        //     chunkRenderer.UpdateChunk(meshData);
+        // }
 
         // foreach (var pos in chunkDataDictionary.Keys)
         // {

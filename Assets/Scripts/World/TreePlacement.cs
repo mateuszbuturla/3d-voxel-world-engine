@@ -8,7 +8,6 @@ public class TreePlacement : MonoBehaviour
 
     [Range(0f, 1.0f)]
     public float threshold;
-    public GameObject prefab;
 
     List<Vector2Int> dircetionsToCheck = new List<Vector2Int>() {
         new Vector2Int(1, 0),
@@ -17,13 +16,16 @@ public class TreePlacement : MonoBehaviour
         new Vector2Int(0, -1),
     };
 
-    public void Generate(int x, int z, int groundHeight)
+    public void Generate(ChunkData chunkData, int x, int z, int groundHeight)
     {
-        bool shouldGenerate = IsLocalMaxima(new Vector2Int(x, z));
+        bool shouldGenerate = IsLocalMaxima(new Vector2Int(chunkData.worldPosition.x + x, chunkData.worldPosition.z + z));
 
-        if (shouldGenerate)
+        if (shouldGenerate && groundHeight > World.Instance.waterThreshold + 4)
         {
-            GameObject tree = Instantiate(prefab, new Vector3(x, groundHeight, z), Quaternion.identity);
+            for (int y = 0; y < 6; y++)
+            {
+                Chunk.SetBlock(chunkData, new Vector3Int(x, groundHeight + y, z), BlockType.Stone);
+            }
         }
     }
 

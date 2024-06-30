@@ -189,7 +189,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   biomeGenerators:
-  - {fileID: 782920613}
+  - {fileID: 791604549}
   - {fileID: 791604549}
   useDomainWarping: 1
 --- !u!1 &499907350
@@ -410,6 +410,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   noiseSettings: {fileID: 11400000, guid: b3aae9de655ba034ab093d1b2b3ecc28, type: 2}
   domainWarping: {fileID: 782920614}
+  treePlacement: {fileID: 0}
 --- !u!114 &782920614
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -452,6 +453,7 @@ GameObject:
   - component: {fileID: 791604551}
   - component: {fileID: 791604549}
   - component: {fileID: 791604550}
+  - component: {fileID: 791604552}
   m_Layer: 0
   m_Name: ForestPlains
   m_TagString: Untagged
@@ -473,6 +475,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   noiseSettings: {fileID: 11400000, guid: c2bd101383553154da5fcdd2b8769830, type: 2}
   domainWarping: {fileID: 791604550}
+  treePlacement: {fileID: 791604552}
 --- !u!114 &791604550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -504,6 +507,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 60251132}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &791604552
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 791604548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ac0d80a9d19e5c41b6b9acf15a4ff6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  noiseSettings: {fileID: 11400000, guid: 43a03410628d76645a7a62eb6e965c8d, type: 2}
+  threshold: 0.55
 --- !u!1 &836582361
 GameObject:
   m_ObjectHideFlags: 0

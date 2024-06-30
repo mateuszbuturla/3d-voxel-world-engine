@@ -4,6 +4,7 @@ public class BiomeGenerator : MonoBehaviour
 {
     public NoiseSettings noiseSettings;
     public DomainWarping domainWarping;
+    public TreePlacement treePlacement;
 
     public ChunkData ProcessColumn(ChunkData chunkData, int x, int z)
     {
@@ -29,10 +30,23 @@ public class BiomeGenerator : MonoBehaviour
             }
             else
             {
-                voxelType = BlockType.Sand;
+                if (y < world.waterThreshold + 3)
+                {
+                    voxelType = BlockType.Sand;
+                }
+                else if (y == groundHeight)
+                {
+                    voxelType = BlockType.Grass;
+                }
+                else if (y < groundHeight)
+                {
+                    voxelType = BlockType.Dirt;
+                }
             }
 
             Chunk.SetBlock(chunkData, new Vector3Int(x, y, z), voxelType);
+
+            // terrainGenerator.biomeGenerators[0].treePlacement.Generate(chunkData, x, z, groundHeight);
         }
 
 
